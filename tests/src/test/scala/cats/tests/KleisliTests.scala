@@ -2,7 +2,7 @@ package cats
 package tests
 
 import cats.arrow.{Arrow, Choice, Split}
-import cats.data.{Kleisli, Reader}
+import cats.data.{Kleisli, Reader, Xor}
 import cats.functor.{Contravariant, Strong}
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
@@ -158,6 +158,7 @@ class KleisliTests extends CatsSuite {
     FlatMap[Kleisli[List, Int, ?]]
     Semigroup[Kleisli[List, Int, String]]
     SemigroupK[Lambda[A => Kleisli[List, A, A]]]
+    Contravariant[Kleisli[List, ?, String]]
 
     // F is Id
     Functor[Kleisli[Id, Int, ?]]
@@ -174,6 +175,25 @@ class KleisliTests extends CatsSuite {
     FlatMap[Kleisli[Id, Int, ?]]
     Semigroup[Kleisli[Id, Int, String]]
     SemigroupK[Lambda[A => Kleisli[Id, A, A]]]
+
+    // F is F[X, _]
+    type IntXor[T] = Int Xor T
+    Functor[Kleisli[IntXor, String, ?]]
+    Apply[Kleisli[IntXor, String, ?]]
+    Applicative[Kleisli[IntXor, String, ?]]
+    Monad[Kleisli[IntXor, Int, ?]]
+    MonadReader[Kleisli[IntXor, Int, ?], Int]
+    Monoid[Kleisli[IntXor, String, String]]
+    MonoidK[Lambda[A => Kleisli[IntXor, A, A]]]
+    Arrow[Kleisli[IntXor, ?, ?]]
+    Choice[Kleisli[IntXor, ?, ?]]
+    Split[Kleisli[IntXor, ?, ?]]
+    Strong[Kleisli[IntXor, ?, ?]]
+    FlatMap[Kleisli[IntXor, Int, ?]]
+    Semigroup[Kleisli[IntXor, Int, String]]
+    SemigroupK[Lambda[A => Kleisli[IntXor, A, A]]]
+    Contravariant[Kleisli[IntXor, ?, String]]
+
 
     // using Reader alias instead of Kleisli with Id as F
     Functor[Reader[Int, ?]]
@@ -201,5 +221,8 @@ class KleisliTests extends CatsSuite {
     Monoid[IntReader[String]]
     FlatMap[IntReader]
     Semigroup[IntReader[String]]
+
+
+
   }
 }
