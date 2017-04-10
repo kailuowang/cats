@@ -49,8 +49,8 @@ class OptionTTests extends CatsSuite {
     implicit val eq0 = OptionT.catsDataEqForOptionT[ListWrapper, Option[Int]]
     implicit val eq1 = OptionT.catsDataEqForOptionT[OptionT[ListWrapper, ?], Int](eq0)
 
-    checkAll("OptionT[ListWrapper, Int]", MonadTests[OptionT[ListWrapper, ?]].monad[Int, Int, Int])
-    checkAll("Monad[OptionT[ListWrapper, ?]]", SerializableTests.serializable(Monad[OptionT[ListWrapper, ?]]))
+    checkAll("OptionT[ListWrapper, Int]", MonadCombineTests[OptionT[ListWrapper, ?]].monadCombine[Int, Int, Int])
+    checkAll("MonadCombine[OptionT[ListWrapper, ?]]", SerializableTests.serializable(MonadCombine[OptionT[ListWrapper, ?]]))
 
     checkAll("OptionT[ListWrapper, Int]", SemigroupKTests[OptionT[ListWrapper, ?]].semigroupK[Int])
     checkAll("SemigroupK[OptionT[ListWrapper, ?]]", SerializableTests.serializable(SemigroupK[OptionT[ListWrapper, ?]]))

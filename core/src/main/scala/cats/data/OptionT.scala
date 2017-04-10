@@ -176,8 +176,8 @@ object OptionT extends OptionTInstances {
 }
 
 private[data] sealed trait OptionTInstances extends OptionTInstances0 {
-  implicit def catsDataMonadForOptionT[F[_]](implicit F0: Monad[F]): Monad[OptionT[F, ?]] =
-    new OptionTMonad[F] { implicit val F = F0 }
+  implicit def catsDataMonadCombineForOptionT[F[_]](implicit F0: Monad[F]): MonadCombine[OptionT[F, ?]] =
+    new OptionTMonadCombine[F] { implicit val F = F0 }
 
   implicit def catsDataFoldableForOptionT[F[_]](implicit F0: Foldable[F]): Foldable[OptionT[F, ?]] =
     new OptionTFoldable[F] { implicit val F = F0 }
@@ -241,7 +241,7 @@ private[data] trait OptionTFunctor[F[_]] extends FunctorFilter[OptionT[F, ?]] {
     fa.mapFilter(f)
 }
 
-private[data] trait OptionTMonad[F[_]] extends Monad[OptionT[F, ?]] {
+private[data] trait OptionTMonadCombine[F[_]] extends MonadCombine[OptionT[F, ?]] {
   implicit def F: Monad[F]
 
   def pure[A](a: A): OptionT[F, A] = OptionT.pure(a)
@@ -254,9 +254,12 @@ private[data] trait OptionTMonad[F[_]] extends Monad[OptionT[F, ?]] {
     OptionT(F.tailRecM(a)(a0 => F.map(f(a0).value)(
       _.fold(Either.right[A, Option[B]](None))(_.map(b => Some(b): Option[B]))
     )))
+
+  override def empty[A]: OptionT[F,A] = OptionT(F.pure(None))
+  override def combineK[A](x: OptionT[F,A], y: OptionT[F,A]): OptionT[F,A] = x orElse y
 }
 
-private trait OptionTMonadError[F[_], E] extends MonadError[OptionT[F, ?], E] with OptionTMonad[F] {
+private trait OptionTMonadError[F[_], E] extends MonadError[OptionT[F, ?], E] with OptionTMonadCombine[F] {
   override def F: MonadError[F, E]
 
   override def raiseError[A](e: E): OptionT[F, A] =

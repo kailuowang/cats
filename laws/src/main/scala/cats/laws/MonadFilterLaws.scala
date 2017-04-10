@@ -6,14 +6,15 @@ import cats.syntax.all._
 /**
  * Laws that must be obeyed by any `MonadFilter`.
  */
-trait MonadFilterLaws[F[_]] extends MonadLaws[F] with FunctorFilterLaws[F] {
-  implicit override def F: MonadFilter[F]
-
-  def monadFilterLeftEmpty[A, B](f: A => F[B]): IsEq[F[B]] =
-    F.empty[A].flatMap(f) <-> F.empty[B]
-
+trait MonadFilterLaws[F[_]] extends MonadFilterWeakLaws[F] {
   def monadFilterRightEmpty[A, B](fa: F[A]): IsEq[F[B]] =
     fa.flatMap(_ => F.empty[B]) <-> F.empty[B]
+}
+
+trait MonadFilterWeakLaws[F[_]] extends MonadLaws[F] with FunctorFilterLaws[F] {
+  implicit override def F: MonadFilter[F]
+  def monadFilterLeftEmpty[A, B](f: A => F[B]): IsEq[F[B]] =
+    F.empty[A].flatMap(f) <-> F.empty[B]
 
   def monadFilterConsistency[A, B](fa: F[A], f: A => Boolean): IsEq[F[A]] =
     fa.filter(f) <-> fa.flatMap(a => if (f(a)) F.pure(a) else F.empty)
@@ -22,4 +23,9 @@ trait MonadFilterLaws[F[_]] extends MonadLaws[F] with FunctorFilterLaws[F] {
 object MonadFilterLaws {
   def apply[F[_]](implicit ev: MonadFilter[F]): MonadFilterLaws[F] =
     new MonadFilterLaws[F] { def F: MonadFilter[F] = ev }
+}
+
+object MonadFilterWeakLaws {
+  def apply[F[_]](implicit ev: MonadFilter[F]): MonadFilterWeakLaws[F] =
+    new MonadFilterWeakLaws[F] { def F: MonadFilter[F] = ev }
 }
