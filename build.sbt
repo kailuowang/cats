@@ -19,6 +19,10 @@ organization in ThisBuild := "org.typelevel"
 
 val CompileTime = config("compile-time").hide
 
+lazy val scalaCheckVersion = settingKey[String]("scalaCheck version")
+
+lazy val versionSuffix = settingKey[Option[String]]("Version suffix")
+
 lazy val kernelSettings = Seq(
   // don't warn on value discarding because it's broken on 2.10 with @sp(Unit)
   scalacOptions ++= commonScalacOptions.filter(_ != "-Ywarn-value-discard"),
@@ -103,10 +107,6 @@ lazy val catsSettings = commonSettings ++ publishSettings ++ scoverageSettings +
 
 
 lazy val currentScalaCheckVersion = "1.14.0"
-
-lazy val scalaCheckVersion = settingKey[String]("scalaCheck version")
-
-lazy val versionSuffix = settingKey[Option[String]]("version suffix")
 
 versionSuffix := None
 
@@ -757,12 +757,12 @@ lazy val xlint = Seq(
   }
 )
 
-addCommandAlias("setVersionSuffix", ";set version := version.value + versionSuffix.value.getOrElse(\"\")")
+addCommandAlias("setVersionSuffix", "set version := version.value + versionSuffix.value.fold(\"\")(_.toString)")
 
 addCommandAlias("crossReleaseForOldScalaCheck",
-  s""";set scalaCheckVersion := "1.13.5"; set versionSuffix := Some("-ScalaCheck1.13"); """ +
+  s""";set scalaCheckVersion := "1.13.4"; set versionSuffix := Some("-ScalaCheck1.13") ; """ +
   List("alleycatsLawsJVM", "alleycatsLawsJS", "testKitsJVM", "testKitsJS", "lawsJVM", "lawsJS").map { m =>
-    s"project $m; release; "}.mkString("; ")
+    s"project $m; release "}.mkString("; ")
 )
 
 
