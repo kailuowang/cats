@@ -760,7 +760,7 @@ lazy val xlint = Seq(
 addCommandAlias("setVersionSuffix", "set version := version.value + versionSuffix.value.fold(\"\")(_.toString)")
 
 addCommandAlias("crossReleaseForOldScalaCheck",
-  s""";set scalaCheckVersion := "1.13.4"; set versionSuffix := Some("-ScalaCheck1.13") ; """ +
+  s""";set scalaCheckVersion in ThisBuild := "1.13.4"; set versionSuffix in ThisBuild := Some("-ScalaCheck1.13") ; """ +
   List("alleycatsLawsJVM", "alleycatsLawsJS", "testKitsJVM", "testKitsJS", "lawsJVM", "lawsJS").map { m =>
     s"project $m; release "}.mkString("; ")
 )
