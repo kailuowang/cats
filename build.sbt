@@ -101,7 +101,15 @@ lazy val includeGeneratedSrc: Setting[_] = {
 
 lazy val catsSettings = commonSettings ++ publishSettings ++ scoverageSettings ++ javadocSettings
 
-lazy val scalaCheckVersion = "1.13.5"
+
+lazy val currentScalaCheckVersion = "1.14.0"
+
+lazy val scalaCheckVersion = settingKey[String]("scalaCheck version")
+
+lazy val versionSuffix = settingKey[Option[String]]("version suffix")
+
+versionSuffix := None
+
 // 2.13.0-M3 workaround
 //lazy val scalaTestVersion = "3.0.5"
 lazy val disciplineVersion = "0.9.0"
@@ -115,7 +123,8 @@ def scalatestVersion(scalaVersion: String): String =
   }
 
 lazy val disciplineDependencies = Seq(
-  libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalaCheckVersion,
+  scalaCheckVersion := currentScalaCheckVersion,
+  libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalaCheckVersion.value,
   libraryDependencies += "org.typelevel" %%% "discipline" % disciplineVersion)
 
 lazy val testingDependencies = Seq(
@@ -334,7 +343,7 @@ lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(includeGeneratedSrc)
   .configureCross(disableScoverage210Jvm)
   .configureCross(disableScoverage210Js)
-  .settings(libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test")
+  .settings(libraryDependencies += "org.scalacheck" %%% "scalacheck" % currentScalaCheckVersion % "test")
   .jsSettings(commonJsSettings)
   .jvmSettings(commonJvmSettings ++ mimaSettings("cats-core") )
 
@@ -664,15 +673,17 @@ lazy val sharedReleaseProcess = Seq(
     checkSnapshotDependencies,
     inquireVersions,
     runClean,
-    releaseStepCommand("validate"),
+//    releaseStepCommand("validate"),
     setReleaseVersion,
+    releaseStepCommand("setVersionSuffix"),
     commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
+//    tagRelease,
+    releaseStepCommand("publishLocal"), //    publishArtifacts,
     setNextVersion,
     commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges)
+//    releaseStepCommand("sonatypeReleaseAll"),
+    pushChanges
+  )
 )
 
 lazy val warnUnusedImport = Seq(
@@ -745,3 +756,14 @@ lazy val xlint = Seq(
     }
   }
 )
+
+addCommandAlias("setVersionSuffix", ";set version := version.value + versionSuffix.value.getOrElse(\"\")")
+
+addCommandAlias("crossReleaseForOldScalaCheck",
+  s""";set scalaCheckVersion := "1.13.5"; set versionSuffix := Some("-ScalaCheck1.13"); """ +
+  List("alleycatsLawsJVM", "alleycatsLawsJS", "testKitsJVM", "testKitsJS", "lawsJVM", "lawsJS").map { m =>
+    s"project $m; release; "}.mkString("; ")
+)
+
+
+addCommandAlias("releaseAll", ";release;crossReleaseForOldScalaCheck")
