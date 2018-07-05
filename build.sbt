@@ -757,7 +757,7 @@ lazy val xlint = Seq(
   }
 )
 
-addCommandAlias("setVersionSuffix", "set version := version.value + versionSuffix.value.fold(\"\")(_.toString)")
+addCommandAlias("setVersionSuffix", "set version in ThisBuild := (version in ThisBuild).value + (versionSuffix in ThisBuild).value.fold(\"\")(_.toString)")
 
 addCommandAlias("crossReleaseForOldScalaCheck",
   s""";set scalaCheckVersion in ThisBuild := "1.13.4"; set versionSuffix in ThisBuild := Some("-ScalaCheck1.13") ; """ +
