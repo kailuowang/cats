@@ -70,7 +70,7 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
               stack = tail
               state = Right(Some(b))
             case Left(a) #:: tail =>
-              stack = (fn(a) #::: tail).force
+              stack = (fn(a) #::: tail).force  //with this `force`, the stacksafety test passes but not sure if it's the right way
               advance()
             case empty =>
               state = Right(None)
