@@ -4,14 +4,15 @@ package laws
 /**
  * Laws that must be obeyed by any `cats.Parallel`.
  */
-trait ParallelLaws[M[_], F[_]] extends NonEmptyParallelLaws[M, F] {
-  def P: Parallel.Aux[M, F]
+trait ParallelLaws[M[_]] extends NonEmptyParallelLaws[M] {
+  val P: Parallel[M]
 
-  def isomorphicPure[A](a: A): IsEq[F[A]] =
+
+  def isomorphicPure[A](a: A): IsEq[P.F[A]] =
     P.applicative.pure(a) <-> P.parallel(P.monad.pure(a))
 }
 
 object ParallelLaws {
-  def apply[M[_], F[_]](implicit ev: Parallel.Aux[M, F]): ParallelLaws[M, F] =
-    new ParallelLaws[M, F] { def P: Parallel.Aux[M, F] = ev }
+  def apply[M[_]](implicit ev: Parallel[M]): ParallelLaws[M] =
+    new ParallelLaws[M] { val P: Parallel[M] = ev }
 }

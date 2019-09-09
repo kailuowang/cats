@@ -416,8 +416,8 @@ class ParallelSuite extends CatsSuite with ApplicativeErrorForEitherTest with Sc
     resultWithInstance should ===("parallel".some)
   }
 
-  checkAll("Parallel[Either[String, *], Validated[String, *]]",
-           ParallelTests[Either[String, *], Validated[String, *]].parallel[Int, String])
+  checkAll("Parallel[Either[String, *]",
+           ParallelTests[Either[String, *]].parallel[Int, String])
   checkAll("Parallel[Ior[String, *], Ior[String, *]]",
            ParallelTests[Ior[String, *], Ior[String, *]].parallel[Int, String])
   checkAll(

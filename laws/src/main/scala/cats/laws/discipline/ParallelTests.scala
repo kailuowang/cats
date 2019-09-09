@@ -5,8 +5,8 @@ package discipline
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-trait ParallelTests[M[_], F[_]] extends NonEmptyParallelTests[M, F] {
-  def laws: ParallelLaws[M, F]
+trait ParallelTests[M[_]] extends NonEmptyParallelTests[M] {
+  val laws: ParallelLaws[M]
 
   def parallel[A, B](implicit ArbA: Arbitrary[A],
                      ArbM: Arbitrary[M[A]],
@@ -24,6 +24,6 @@ trait ParallelTests[M[_], F[_]] extends NonEmptyParallelTests[M, F] {
 }
 
 object ParallelTests {
-  def apply[M[_], F[_]](implicit ev: Parallel.Aux[M, F]): ParallelTests[M, F] =
-    new ParallelTests[M, F] { val laws: ParallelLaws[M, F] = ParallelLaws[M, F] }
+  def apply[M[_]](implicit ev: Parallel[M]): ParallelTests[M] =
+    new ParallelTests[M] { val laws: ParallelLaws[M] = ParallelLaws[M] }
 }
