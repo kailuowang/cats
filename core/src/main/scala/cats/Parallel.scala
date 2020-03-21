@@ -1,6 +1,8 @@
 package cats
 
 import cats.arrow.FunctionK
+import cats.data.Validated
+import cats.data.Validated.Valid
 
 /**
  * Some types that form a FlatMap, are also capable of forming an Apply that supports parallel composition.
@@ -373,4 +375,25 @@ object Parallel extends ParallelArityFunctions2 {
 
     val parallel: M ~> M = FunctionK.id
   }
+
+  def parallelForMonadError[M[_], E](implicit M: MonadError[M, E], E: Semigroup[E]): Parallel.Aux[M, Lambda[A => M[Validated[E, A]]]] =
+    new Parallel[M] {
+      type F[A] = M[Validated[E, A]]
+
+      override def applicative: Applicative[F] = new Applicative[F] {
+
+        override def pure[A](a: A): F[A] = M.pure(Valid(a))
+
+        override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
+          M.map2(ff, fa)((vf, va) => Applicative[Validated[E, *]].ap(vf)(va))
+      }
+
+      override def monad: Monad[M] = M
+
+      override def sequential: F ~> M = Lambda[F ~> M] { v =>
+        M.rethrow(M.map(v)(_.toEither))
+      }
+      override def parallel: M ~> F = Lambda[M ~> F](e => M.map(M.attempt(e))(Validated.fromEither))
+
+    }
 }
